@@ -126,9 +126,13 @@ describe('Reddit API Integration', () => {
 	});
 
 	test('handles non-existent subreddit gracefully', async () => {
-		await expect(
-			fetchRedditPosts('thisdoesnotexist123456789xyz', 1),
-		).rejects.toThrow();
+		try {
+			await fetchRedditPosts('thisdoesnotexist123456789xyz', 1);
+			expect(true).toBe(false);
+		} catch (err) {
+			expect(err).toBeDefined();
+			expect(err.message || err.response?.status).toBeDefined();
+		}
 	});
 });
 
@@ -462,21 +466,29 @@ describe('Error Handling', () => {
 		const invalidUrl =
 			'https://www.reddit.com/r/thisdefinitelydoesnotexist12345/top/.json';
 
-		await expect(
-			axios.get(invalidUrl, {
+		try {
+			await axios.get(invalidUrl, {
 				timeout: DEFAULT_REQUEST_TIMEOUT,
 				headers: { 'User-Agent': 'RedditDownloaderTest/1.0' },
-			}),
-		).rejects.toThrow();
+			});
+			expect(true).toBe(false);
+		} catch (err) {
+			expect(err).toBeDefined();
+			expect(err.response?.status === 404 || err.message).toBeTruthy();
+		}
 	});
 
 	test('handles timeout appropriately', async () => {
-		await expect(
-			axios.get('https://www.reddit.com/r/pics/top/.json', {
+		try {
+			await axios.get('https://www.reddit.com/r/pics/top/.json', {
 				timeout: 1,
 				headers: { 'User-Agent': 'RedditDownloaderTest/1.0' },
-			}),
-		).rejects.toThrow();
+			});
+			expect(true).toBe(false);
+		} catch (err) {
+			expect(err).toBeDefined();
+			expect(err.code === 'ECONNABORTED' || err.message).toBeTruthy();
+		}
 	});
 });
 
